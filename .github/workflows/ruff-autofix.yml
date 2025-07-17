@@ -6,29 +6,45 @@ jobs:
   ruff_autofix:
     runs-on: ubuntu-latest
 
-    # ❶ 기본 GITHUB_TOKEN에 push 권한 부여
     permissions:
-      contents: write
+      contents: write          # ✅ PUSH 권한
 
     steps:
-      # ❷ PR에서 실제 브랜치를 Checkout
+      # 1) PR 브랜치를 그대로 체크아웃
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+          persist-credentials: true   # PUSH할 때 필요
 
-      - name: Run Ruff with autofix
+      # 2) Ruff 실행
+      - name: Run Ruff autofix
         uses: chartboost/ruff-action@v1
         with:
           args: --fix .
 
-      - name: Commit & push fixes
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: "chore: auto-fix imports via ruff [skip ci]"
-          add: .
-          # ❸ 푸시 대상 브랜치를 명시해야 detached HEAD 문제 해결
-          branch: ${{ github.head_ref }}
-          skip_dirty: true     # 변경 없으면 에러 대신 통과
+      # 3) 변경 사항이 있을 때만 커밋 + 푸시
+      - name: Commit & push fixes (manual)
+        shell: bash
+        run: |
+          set -e
+          echo "::group::Git status"
+          git status --short
+          echo "::endgroup::"
 
-          # 포크 PR·조직 레포라 기본 TOKEN이 막히면 ↓ 주석 해제
-          # token: ${{ secrets.PAT_PUSH }}
+          # 변경된 파일 없으면 바로 종료
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "🔹 No changes to commit."
+            exit 0
+          fi
+
+          echo "🔸 Committing Ruff fixes…"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: auto-fix imports via ruff [skip ci]"
+
+          echo "🔸 Pushing to branch ${{ github.head_ref }} …"
+          git push origin HEAD:${{ github.head_ref }}
+
+      # (옵션) PAT 필요 시 token 주입
+      # 위 checkout 스텝에 token: ${{ secrets.PAT_PUSH }} 추가
