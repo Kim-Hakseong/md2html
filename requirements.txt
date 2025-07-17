@@ -1,0 +1,5 @@
+markdown>=3.0.0
+pytest>=6.0.0
+beautifulsoup4>=4.0.0
+ruff>=0.1.0
+black>=22.0.0
