@@ -15,7 +15,7 @@ jobs:
 
       - run: pip install -r requirements.txt pytest ruff black
 
-      - run: ruff .
+      - run: ruff check .
 
       - run: black --check .
 
