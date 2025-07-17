@@ -1,25 +1,20 @@
 name: CI
-
 on: [push, pull_request]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4          # ✅ v4 (소문자 w 아님)
 
-test:
+      - uses: actions/setup-python@v5      # ✅ v5
+        with:
+          python-version: '3.10'
 
-runs-on: ubuntu-latest
+      - run: pip install -r requirements.txt pytest ruff black
 
-steps:
+      - run: ruff .
 
-  - uses: actions/checkout@v4
+      - run: black --check .
 
-  - uses: actions/setup-python@v5
-
-    with: { python-version: '3.10' }
-
-  - run: pip install -r requirements.txt pytest ruff black
-
-  - run: ruff .
-
-  - run: black --check .
-
-  - run: pytest -v
+      - run: pytest -v
