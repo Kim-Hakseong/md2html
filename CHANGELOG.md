@@ -38,3 +38,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Error handling for non-existent files
 - Unit tests with pytest
 - README documentation
+⚡️ Ruff auto-fix CI 테스트
